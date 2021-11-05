@@ -50,6 +50,7 @@ class ModuleMake extends Command
      */
     public function handle()
     {
+
         if($this->option('all')){
             //echo Command::SUCCESS.''.PHP_EOL ;
             $this->input->setOption('migration', true);
@@ -132,10 +133,37 @@ class ModuleMake extends Command
 
             $this->files->put($path, $stub);
             $this->info('Controller created successfully.');
-            //$this->updateModularConfig();
         }
 
+        $this->updateModularConfig();
         $this->createRoutes($controller, $modelName);
+    }
+
+    private function updateModularConfig(){
+
+        $group = explode('\\', str_replace('/', '\\',$this->argument('name')))[0];
+        $module = Str::studly(class_basename($this->argument('name')));
+
+        $modular = $this->files->get(base_path('config/modular.php'));
+
+        $matches = [];
+        preg_match(
+            "/'modules' => \[.*?'{$group}' => \[(.*?)\]/s",
+            $modular,
+            $matches
+        );
+
+
+        if(count($matches) == 2){
+            if(!preg_match("/'{$module}'/", $matches[1])){
+                $parts = preg_split("/('modules' => \[.*?'{$group}' => \[)/s", $modular, 2, PREG_SPLIT_DELIM_CAPTURE);
+                if(count($parts) == 3){
+                    $configStr = $parts[0].$parts[1]."\n            '$module',".$parts[2];
+                    $this->files->put(base_path('config/modular.php'), $configStr);
+                }
+            }
+        }
+
     }
 
     private function createApiController()
@@ -143,7 +171,7 @@ class ModuleMake extends Command
         $controller = Str::studly(class_basename($this->argument('name')));
         $modelName = Str::singular(Str::studly(class_basename($this->argument('name'))));
 
-        $path = $this->getControllerPath($this->argument('name'));
+        $path = $this->getApiControllerPath($this->argument('name'));
 
         if ($this->alreadyExists($path)) {
             $this->error('Controller already exists!');
@@ -174,9 +202,10 @@ class ModuleMake extends Command
 
             $this->files->put($path, $stub);
             $this->info('Controller created successfully.');
-            //$this->updateModularConfig();
+
         }
 
+        $this->updateModularConfig();
         $this->createApiRoutes($controller, $modelName);
 
     }
@@ -381,5 +410,12 @@ class ModuleMake extends Command
     protected function alreadyExists($path) : bool
     {
         return $this->files->exists($path);
+    }
+
+    private function getApiControllerPath($name)
+    {
+        $controller = Str::studly(class_basename($name));
+        return $this->laravel['path'].'/Modules/'.str_replace('\\', '/', $name)."/Controllers/Api/"."{$controller}Controller.php";
+
     }
 }

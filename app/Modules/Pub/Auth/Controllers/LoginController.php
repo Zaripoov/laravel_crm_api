@@ -11,7 +11,7 @@ class LoginController extends Controller
     //
     use AuthenticatesUsers;
 
-    protected  $redirectTo = '/admin/users';
+    protected  $redirectTo = '/admin/dashboard';
 
     public function __construct(){
         $this->middleware('guest')->except('logout');
