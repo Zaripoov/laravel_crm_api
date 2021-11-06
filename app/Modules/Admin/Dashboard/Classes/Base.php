@@ -21,6 +21,7 @@ class Base extends Controller
     protected $sidebar;
     protected $vars;
     protected $locale;
+    protected $service;
 
     public function __construct(){
         $this->template = "Admin::Dashboard.dashboard";
