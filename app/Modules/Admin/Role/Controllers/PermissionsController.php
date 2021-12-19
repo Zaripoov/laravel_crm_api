@@ -4,7 +4,7 @@ namespace App\Modules\Admin\Role\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Admin\Dashboard\Classes\Base;
-use App\Modules\Admin\Role\Models\Permissions;
+use App\Modules\Admin\Role\Models\Permission;
 use App\Modules\Admin\Role\Models\Role;
 use App\Modules\Admin\Role\Services\PermService;
 use App\Modules\Admin\Role\Services\RoleService;
@@ -28,7 +28,7 @@ class PermissionsController extends Base
     {
         $this->authorize('view', Role::class);
 
-        $perms = Permissions::all();
+        $perms = Permission::all();
         $roles = Role::all();
 
         $this->title = "Title Perm Index";
